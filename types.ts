@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export type WindowState = 'open' | 'minimized' | 'closed';
@@ -14,7 +13,7 @@ export interface WindowInstance {
 }
 
 export interface AppDefinition {
-    id: string;
+    id:string;
     name: string;
     icon: React.ReactNode;
     component: React.FC<{ windowId: string }>;
@@ -34,6 +33,7 @@ export interface FileSystemNode {
     type: 'folder' | 'file';
     children?: FileSystemNode[];
     projectId?: string;
+    content?: string;
 }
 
 export interface Notification {

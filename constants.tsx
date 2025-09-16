@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { AppDefinition, FileSystemNode, Project } from './types';
 import TerminalApp from './components/apps/TerminalApp';
@@ -95,8 +94,33 @@ export const FILE_SYSTEM: FileSystemNode[] = [
         name: 'Documents',
         type: 'folder',
         children: [
-            { name: 'resume.pdf', type: 'file' },
-            { name: 'cover_letter.docx', type: 'file' },
+            { name: 'resume.pdf', type: 'file', content: `[Placeholder] Curriculum Vitae
+
+NOM
+Consultant Tech
+
+PROFIL
+Consultant en interface systémique et ingénieur frontend senior avec une expertise avérée dans la création d'applications web performantes et intuitives. Spécialisé dans l'écosystème React/TypeScript et l'intégration de technologies d'IA de pointe.
+
+COMPÉTENCES
+- Frontend: React, TypeScript, Tailwind CSS, D3.js
+- Backend: Node.js, Python, Go
+- IA: Google Gemini API
+- DevOps: Docker, Kubernetes, CI/CD
+
+EXPÉRIENCE
+- Lead Frontend Engineer, Tech Solutions Inc.
+- Senior Software Engineer, Web Innovators` },
+            { name: 'cover_letter.docx', type: 'file', content: `[Placeholder] Lettre de Motivation
+
+À qui de droit,
+
+Je vous écris pour exprimer mon vif intérêt pour un rôle stimulant au sein de votre organisation. Fort de mon expérience dans la conception d'interfaces complexes et l'intégration d'IA, je suis convaincu de pouvoir apporter une valeur significative à vos projets.
+
+Mon approche se concentre sur la création de systèmes évolutifs et d'expériences utilisateur exceptionnelles.
+
+Cordialement,
+Consultant Tech` },
         ]
     }
 ];

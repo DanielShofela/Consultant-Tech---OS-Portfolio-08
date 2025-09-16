@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FILE_SYSTEM, PROJECTS, FileIcon, FolderIcon } from '../../constants';
 import type { FileSystemNode, Project } from '../../types';
@@ -6,7 +5,9 @@ import type { FileSystemNode, Project } from '../../types';
 interface Tab {
     id: string;
     title: string;
-    projectId: string;
+    type: 'project' | 'document';
+    projectId?: string;
+    content?: string;
 }
 
 const ProjectDetail: React.FC<{ project: Project }> = ({ project }) => {
@@ -31,14 +32,23 @@ const ProjectDetail: React.FC<{ project: Project }> = ({ project }) => {
     );
 };
 
-const FileSystemTree: React.FC<{ node: FileSystemNode; onFileClick: (projectId: string, fileName: string) => void; level?: number }> = ({ node, onFileClick, level = 0 }) => {
+const DocumentDetail: React.FC<{ title: string; content: string }> = ({ title, content }) => {
+    return (
+        <div className="p-4 bg-gray-900/50 rounded-lg h-full overflow-y-auto">
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">{title}</h2>
+            <pre className="text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">{content}</pre>
+        </div>
+    );
+};
+
+const FileSystemTree: React.FC<{ node: FileSystemNode; onFileClick: (node: FileSystemNode) => void; level?: number }> = ({ node, onFileClick, level = 0 }) => {
     const [isOpen, setIsOpen] = useState(true);
 
     const handleNodeClick = () => {
         if (node.type === 'folder') {
             setIsOpen(!isOpen);
-        } else if (node.projectId) {
-            onFileClick(node.projectId, node.name);
+        } else {
+            onFileClick(node);
         }
     };
     
@@ -64,30 +74,47 @@ const ProjectsApp: React.FC<{windowId: string}> = () => {
     const [tabs, setTabs] = useState<Tab[]>([]);
     const [activeTabId, setActiveTabId] = useState<string | null>(null);
 
-    const openTab = (projectId: string, fileName: string) => {
-        const existingTab = tabs.find(tab => tab.projectId === projectId);
+    const openTab = (node: FileSystemNode) => {
+        if (node.type !== 'file') return;
+
+        const tabId = node.projectId ? `tab-proj-${node.projectId}` : `tab-doc-${node.name}`;
+        
+        const existingTab = tabs.find(tab => tab.id === tabId);
         if (existingTab) {
             setActiveTabId(existingTab.id);
-        } else {
-            const newTab: Tab = {
-                id: `tab-${projectId}`,
-                title: fileName,
-                projectId,
-            };
-            setTabs([...tabs, newTab]);
-            setActiveTabId(newTab.id);
+            return;
         }
+
+        let newTab: Tab;
+        if (node.projectId) {
+            newTab = { id: tabId, title: node.name, type: 'project', projectId: node.projectId };
+        } else {
+            newTab = { id: tabId, title: node.name, type: 'document', content: node.content || 'Contenu non disponible.' };
+        }
+        
+        setTabs(prev => [...prev, newTab]);
+        setActiveTabId(newTab.id);
     };
 
     const closeTab = (tabId: string) => {
-        const newTabs = tabs.filter(tab => tab.id !== tabId);
+        const tabIndex = tabs.findIndex(t => t.id === tabId);
+        if (tabIndex === -1) return;
+
+        const newTabs = tabs.filter(t => t.id !== tabId);
         setTabs(newTabs);
+
         if (activeTabId === tabId) {
-            setActiveTabId(newTabs.length > 0 ? newTabs[0].id : null);
+            if (newTabs.length === 0) {
+                setActiveTabId(null);
+            } else {
+                const newActiveIndex = Math.max(0, tabIndex - 1);
+                setActiveTabId(newTabs[newActiveIndex].id);
+            }
         }
     };
 
-    const activeProject = PROJECTS.find(p => p.id === tabs.find(t => t.id === activeTabId)?.projectId);
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    const activeProject = activeTab?.type === 'project' ? PROJECTS.find(p => p.id === activeTab.projectId) : undefined;
 
     return (
         <div className="flex h-full bg-gray-800 text-gray-200">
@@ -106,12 +133,16 @@ const ProjectsApp: React.FC<{windowId: string}> = () => {
                     ))}
                 </div>
                 <div className="flex-1 p-2 overflow-auto">
-                    {activeProject ? (
-                        <ProjectDetail project={activeProject} />
-                    ) : (
+                    {!activeTab && (
                         <div className="flex items-center justify-center h-full text-gray-500">
-                           <p>Select a project from the explorer to view details.</p>
+                           <p>Select a file from the explorer to view details.</p>
                         </div>
+                    )}
+                    {activeTab?.type === 'project' && activeProject && (
+                        <ProjectDetail project={activeProject} />
+                    )}
+                    {activeTab?.type === 'document' && (
+                        <DocumentDetail title={activeTab.title} content={activeTab.content!} />
                     )}
                 </div>
             </main>
